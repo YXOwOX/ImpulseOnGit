@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en" class="h-100" data-bs-theme="auto">
+
+<head>
+    <title>Welcome to Impulse</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#712cf9" />
+    <!--<link href="cover.css" rel="stylesheet"/>-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.js"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/mithril/mithril.js"></script>
+    <!-- <script src="https://unpkg.com/mithril/mithril.js"></script> -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/sketchy/bootstrap.min.css" integrity="sha384-RxqHG2ilm4r6aFRpGmBbGTjsqwfqHOKy1ArsMhHusnRO47jcGqpIQqlQK/kmGy9R" crossorigin="anonymous">
+
+    <script>
+        var linkClicked = document.getElementsByClassName('nav-link');
+        var numClass = linkClicked.length;
+
+        for (var i = 0; i < numClass; i++) {
+            linkClicked[i].addEventListener('click', function() {
+                var onTheMoment = document.getElementsByClassName('active');
+                onTheMoment[0].className = onTheMoment[0].className.replace(' active', '');
+                this.className += ' active';
+            }, false);
+        }
+    </script>
+
+    <style>
+    /*    
+        .card-bg-custom1 {
+            background-color: #D9114A;
+
+        }
+
+        .card-hover:hover {
+            background-color: rgba(217, 17, 74, 0.5);
+            // couleur rouge semi-transparente pour l'exemple 
+            backdrop-filter: blur(10px);
+            // applique un filtre de flou de 10 pixels 
+        }
+
+        .h1-custom1 {
+            border-bottom: #D9114A 1.5px solid;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        */
+        body {
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            
+            margin-top: 1%;
+            margin-bottom: 1%;
+ 			padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        img {
+            font-size: 2px;
+        }
+        vote {
+            float: left;
+        }
+        
+        </style>
+</head>
+  
+<body class="container">
+
+    <script>
+        var MainNav = {
+            view: function() {
+                return m("header", {
+                    class: 'mb-3'
+                }, [
+                    m("barre", [
+                        m("h3", {
+                            class: 'h3 text-center'
+                        }, "IMPULSE"),
+                        m("nav", {
+                            class: 'navbar navbar-expand-sm bg-primary navbar-dark justify-content-center'
+                        }, [
+
+
+
+                        m("ul", {class: 'navbar-nav'},[
+ 
+                                                  
+                            m("li", {
+                                class: 'nav-item'
+                            }, [
+                                m("a", {
+                                    class: 'nav-link',
+                                    href: '#!/Explore/:page0',
+                                    onclick: m.route.link
+                                }, "Explore"),
+                            ]),
+                            Login.ID ? m("li", {
+                                class: 'nav-item'
+                            }, [
+                                m("a", {
+                                    class: 'nav-link',
+                                    href: '#!/Signed',
+                                    onclick: m.route.link //à changer
+                                }, "My signatures"),
+                            ]) : null,
+                            Login.ID ? m("li", {
+                                class: 'nav-item'
+                            }, [
+                                m("a", {
+                                    class: 'nav-link',
+                                    href: '#!/MyExplore',
+                                    onclick: m.route.link
+                                }, "My petitions"),
+                            ]) : null,
+                            Login.ID ? m("li", {
+                                class: 'nav-item'
+                            }, [
+                                m("a", {
+                                    class: 'nav-link',
+                                    href: '#!/Create',
+                                    onclick: m.route.link
+                                }, "new petition"),
+                            ]) : null,
+                            Login.ID ? null : m("li", {
+                                class: 'nav-item'
+                            }, [
+                                m("a", {
+                                    class: 'nav-link',
+                                    href: '#!/Login',
+                                    onclick: m.route.link
+                                }, "Connect"),
+                            ]),
+                            Login.ID ? m("li", {
+                                class: 'nav-item'
+                            }, [
+                                m("a", {
+                                    class: 'nav-link',
+                                    id: "DiconnectBTN",
+                                    href: "#",
+                                    onclick: function() {
+                                        DiconnectBTN.onclick = function() {
+                                            handleDisconnect();
+                                        };
+                                    }
+                                }, "Disconnect")
+                            ]) : null,
+                            Login.ID ? null : m("li", {
+                                class: 'nav-item'
+                            }, [
+                                m("a", {
+                                    class: 'nav-link',
+                                    href: "#"
+                                }, Login.name, [
+                                    m("img", {
+                                        "src": Login.smallurl
+                                    })
+                                ])
+                            ])
+                            
+                            ])
+
+                        ])
+                    ])
+                ])
+            }
+        }
+
+        var WelcomeView = {
+            view: function() {
+                m.redraw();
+                return m('div', {
+                    class: 'text-center cover-container d-flex w-100 h-100 p-3 mx-auto flex-column'
+                }, [
+                    m(MainNav),
+                    m("main", {
+                        class: 'px-3 mt-auto mb-auto'
+                    }, [
+                        m("h1", "Welcome to Impulse"),
+                        m("p", {
+                            class: 'lead'
+                        }, "Join us in our fight for a better world by signing our petition now! Together, we can make our voices heard and bring about positive changes for the future of our planet and society. Every signature counts, so don't hesitate to take action!"),
+                        m("p", {
+                            class: 'lead'
+                        }, [
+                            m("a", {
+                                class: 'btn btn-lg btn btn-outline-danger fw-bold btn-outline-custom1',
+                                href: '#!/Login',
+                                onclick: m.route.link
+                            }, "Take the leap")
+                        ])
+                    ]),
+                    m("footer", {
+                        class: 'mb-3 fixed-bottom text-dark-50'
+                    }, "@Copyright LE BERRE COSQUER M1 MIAGE 202")
+                ])
+            }
+        }
+
+        var Login = {
+            name: "",
+            email: "",
+            ID: "",
+            url: "",
+            
+            
+          /*  name: "ADMIN",
+            email: "admin@impulse.local",
+            ID: "ADMIMP",
+            url: "https://cdn-icons-png.flaticon.com/128/1946/1946429.png",
+            smallurl: "",*/
+            
+
+            handleCredential: function(response) {
+                console.log("callback called:" + response.credential)
+                // decodeJwtResponse() is a custom function defined by you
+                // to decode the credential response.
+                const responsePayload = jwt_decode(response.credential);
+
+                console.log("ID: " + responsePayload.sub);
+                console.log('Full Name: ' + responsePayload.name);
+                console.log('Given Name: ' + responsePayload.given_name);
+                console.log('Family Name: ' + responsePayload.family_name);
+                console.log("Image URL: " + responsePayload.picture);
+                console.log("Email: " + responsePayload.email);
+
+                Login.name = responsePayload.name
+                Login.email = responsePayload.email
+                Login.ID = response.credential
+                Login.url = responsePayload.picture
+                // external event
+                //m.redraw()
+            },
+            Disconnect: function() {
+                Login.name = "";
+                Login.email = "";
+                Login.ID = "";
+                Login.url = "";
+                Login.smallurl = "";
+                //m.redraw();
+            }
+        }
+        
+        var LoginView = {
+            view: function() {
+                return m('div', {
+                    class: "vh-100 d-flex justify-content-center align-items-center text-center w-100"
+                }, [
+                    m('div', {
+                        class: 'form-signin mx-auto'
+                    }, [
+                        m("h1", {
+                            class: 'h1'
+                        }, 'IMPULSE'),
+                        Login.ID ? null : m("h4", {
+                            class: 'mt-5 mb-3 h4-custom'
+                        }, 'Please sign in'),
+                        m("div", {
+                            "id": "g_id_onload",
+                            "data-client_id": "282464720466-08u72ug1bg5ioamoqa9n726038trnjj2.apps.googleusercontent.com",
+                            "data-callback": "handleCredentialResponse",
+                            class: "text-center"
+                        }),
+                        Login.ID ? null : m("img", { src: "https://cdn.dribbble.com/users/199982/screenshots/4797264/media/33fa3ba230ecf2f52e369bac5eda70ab.gif", style: "height: 50%; width: 50%;" }),
+                        m("buttonRow", {
+                    class: "row ustify-content-center align-items-center text-center"
+                },[
+                Login.ID ? null : m("div", {
+                            "class": "g_id_signin",
+                            "data-type": "standard"
+                        })
+                ]),
+                     /*   Login.ID ? null : m("div", {
+                            "class": "g_id_signin",
+                            "data-type": "standard"
+                        }),*/
+                        Login.ID ? m("h6", {
+                            class: 'mt-2'
+                        }, "Welcome " + Login.name + " you're using " + Login.email) : null,
+                        Login.ID ? null : m("h6", {
+                            class: 'mt-2'
+                        }, "This page might need to be refreshed"),
+                        Login.ID ? m("img", {
+                            "src": Login.url,
+                            class: "mt-3 mb-3"
+                        }) : null,
+                        m("p", {
+                            class: 'lead'
+                        }, [
+                            Login.ID ? m("a", {
+                                class: 'btn btn-lg btn btn-outline-danger fw-bold btn-outline-custom1',
+                                href: '#!/Explore/:page0',
+                                onclick: m.route.link
+                            }, "BEGIN") : null
+                        ])
+                    ])
+                ]);
+                m.redraw();
+            }
+
+
+        }
+
+        function handleCredentialResponse(response) {
+            console.log("callback called:" + response.credential);
+            Login.handleCredential(response);
+            m.redraw()
+        }
+
+        function handleDisconnect() {
+            Login.Disconnect();
+            m.route.set("/Welcome");
+            console.log("DISCONNECT")
+        }
+
+        //#######EXPLORE PAGE########
+
+        var Petitions = {
+            list: [],
+            myList: [],
+            MySig: [],
+
+            loadList: function(filter,sort,page) {
+                return m.request({
+                        method: "GET",
+                        url: "_ah/api/impulseAPI/v2/ListAllPetitions/" + encodeURIComponent(filter) + "/" + encodeURIComponent(sort) + "/" + encodeURIComponent(page)
+                    })
+                    .then(function(result) {
+                        Petitions.list = result.items
+                        console.log("LoadListPetitions:", result.items)
+                    })
+            },
+            loadMyList: function(filter,sort,authorEmail,page){
+                return m.request({
+                        method: "GET",
+                        url: "_ah/api/impulseAPI/v2/ListPetitionsByAuthorName/" + encodeURIComponent(filter) + "/" + encodeURIComponent(sort) + "/" + encodeURIComponent(authorEmail) + "/" + encodeURIComponent(page)
+                    })
+                    .then(function(result) {
+                        Petitions.myList = result.items
+                        console.log("ListPetitionsByAuthorName:", result.items)
+                    })
+            },
+            getPetition: function (petId) {
+                return m.request({
+                    method: "GET",
+                    url: "_ah/api/impulseAPI/v2/GetPetition/" + encodeURIComponent(petId)
+                }).then(function(result) {
+                    console.log("GetPetition:", result);
+                    return result;
+                });
+            },
+            addPet: function(ename, edescription, eemail, eauthor) {
+                return m.request({
+                        method: "PUT",
+                        url: "_ah/api/impulseAPI/v2/AddPetition/" + encodeURIComponent(ename) + "/" + encodeURIComponent(edescription) + "/" + encodeURIComponent(eemail) + "/" + encodeURIComponent(eauthor)
+                    })
+                    .then(function(result,response) {
+                        console.log("saving...", ename, "By", eauthor, " ", eemail)
+                        console.log("AddPetition:", result)
+                        console.log("Status :", reponse)
+                        Petitions.loadList()
+                    })
+            },
+            getAuthor: function(authorId) {
+                return m.request({
+                    method: "GET",
+                    url: "_ah/api/impulseAPI/v2/GetAuthor/" + authorId
+                }).then(function(result) {
+                    console.log("GetAuthor:", result);
+                    return result;
+                });
+            },
+            signPetition: function(petId, SignerMail) {
+                return m.request({
+                    method: "PUT",
+                    url: "_ah/api/impulseAPI/v2/SignPetition/" + encodeURIComponent(petId) + "/" + encodeURIComponent(SignerMail)
+                }).then(function(result) {
+                    console.log("SignPetition:", petId)
+                    console.log(result)
+                });
+            },
+            MySignatures: function(filter,sort,SignerMail,page) {
+                return m.request({
+                    method: "GET",
+                    url: "_ah/api/impulseAPI/v2/ListSignedPetitions/" + encodeURIComponent(filter) + "/" + encodeURIComponent(sort) + "/" + encodeURIComponent(SignerMail) + "/" + encodeURIComponent(page)
+                }).then(function(result){
+                    Petitions.MySig = result.items
+                    console.log("LoadSignedPetitions:", result.items)
+                });
+            }
+        }
+        
+        var Authors = {
+            list: [],
+
+            A_loadList: function() {
+                return m.request({
+                        method: "GET",
+                        url: "_ah/api/impulseAPI/v2/ListAllAuthors/"
+                    })
+                    .then(function(result) {
+                        Authors.list = result.items
+                        console.log("ListAuthors:", result.items)
+                    })
+            }
+
+
+        }       
+
+        function createCard(title, Authname, date, count, onclickPet) {
+          /*  return m('.card.rounded-0.border-0.text-white.card-bg-custom1.card-hover', {
+                onclick: onclickPet
+            }, [
+                m('.border-0', m('p.card-text.text-muted.mb-1', [
+                    m('small', {
+                        'style': 'font-size: small'
+                    }, date),
+                ])),
+                m('.card-body.text-center', [
+                    m('h5.card-title.mx-auto', title)
+                ]),
+                m('.border-0.container', [
+                    m('div.row', [
+                        m('div.col', [
+                            m('small.card-text.text-start', Authname)
+                        ]),
+                        m('div.col', [
+                            m('small.card-text.text-end', [
+                                m('span.me-3', [
+                                    m('i.fas.fa-user-alt'),
+                                    m('span.ms-2', count)
+                                ])
+                            ])
+                        ])
+                    ])
+                ])
+            ]);*/
+            return m("cardPetition", {
+                class: "cards",
+                onclick: onclickPet,
+            },[
+                m("titleRow", {
+                    class: "row"
+                },[
+                m("TitleCard", {
+                            class: 'h4 text-center'
+                        }, title)
+                ]),
+                m("AuthRow", {
+                    class: "row"
+                },[
+                m("AuthCard", {
+                            class: 'p text-center'
+                        }, Authname)
+                ]),
+                m("DateRow", {
+                    class: "row"
+                },[
+                m("DateCard", {
+                            class: 'p text-center'
+                        }, formatDate(date))
+                ]),
+                m("CountRow", {
+                    class: "row justify-content-center d-flex align-items-center"
+                },[
+                m('vote', {class: "text-center"}, count),
+                m("img", { src: "https://img.icons8.com/ios/50/autograph.png", style: "height: 20%; width: 20%; float: right;" })
+                ])
+                
+            ]
+            )
+        }
+        // Fonction pour formater la date au format "YYYY-MM-DD"
+function formatDate(date) {
+    const formattedDate = new Date(date);
+    const year = formattedDate.getFullYear();
+    const month = String(formattedDate.getMonth() + 1).padStart(2, '0'); // Les mois sont indexés à partir de 0, donc +1 est ajouté
+    const day = String(formattedDate.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+}
+
+        const cardList = {
+    items: [],
+    page: 0,
+    pageSize: 3,
+    nextPage: function() {
+            cardList.page = cardList.page + 1 ;
+            m.route.set("/Explore/:page" + cardList.page);
+            m.route.link;
+            location.reload();
+    },
+    prevPage: function() {
+        if (cardList.page > 1) {
+            cardList.page = cardList.page - 1 ;
+            m.route.set("/Explore/:page" + cardList.page);
+            m.route.link;
+            location.reload();
+        }
+        else if (cardList.page == 1) {
+            m.route.set("/Explore/:page0");
+            m.route.link;
+            location.reload();
+        }
+    },
+    
+    view: function() {
+        const start = cardList.page * cardList.pageSize;
+        const end = start + cardList.pageSize;
+        const currentPage = cardList.items.slice(start, end);
+
+        return m('.card-list', { style: 'margin: 0 1%;' }, [
+            m('h2.text-center', 'Sélectionnez la cause qui vous tient à cœur'),
+            m('.row.row-cols-1.g-10', { style: 'justify-content: center;' }, currentPage.map((card) => {
+                return m('.col-12.col-md-6.col-lg-4.mb-3', { style: 'border: 1px solid black; margin: 1%;' }, card);
+            })),
+            m('div', { style: 'display: flex; justify-content: center;' }, [
+                m('button', {
+                    onclick: cardList.prevPage,
+                    style: 'margin-right: 10px;'
+                }, 'Previous'),
+                m('button', {
+                    onclick: cardList.nextPage,
+                    style: 'margin-left: 10px;'
+                }, 'Next')
+            ])
+        ]);
+    }
+};
+
+var ExploreView = {
+    ordreTri: "ASC",
+    triPar: "NAME",
+
+    oninit: function() {
+        this.loadPetitions();
+    },
+
+    loadPetitions: function() {
+        Petitions.loadList(this.triPar, this.ordreTri, 1).then(function() {
+            return Promise.all(Petitions.list.map(function(item) {
+                try {
+                    return Petitions.getAuthor(item.properties.P_Author.id).then(function(author) {
+                        item.author = author;
+                    });
+                } catch (error) {
+                    console.log("ERROR");
+                }
+            }));
+        }).then(function() {
+            cardList.items = Petitions.list.map(function(item) {
+                var author = item.author;
+                var authorName = author !== undefined ? author.properties.A_Name : "Jean Bugé";
+                return createCard(item.properties.P_Name, authorName, item.properties.P_Date, item.properties.P_Signatures, function() {
+                    m.route.set("/Signature/:id" + item.key.id);
+                    console.log(m.route.get());
+                });
+            });
+        });
+    },
+
+    majTri: function(event) {
+        this.ordreTri = event.target.value;
+        this.loadPetitions();
+    },
+
+    majTriPar: function(event) {
+        this.triPar = event.target.value;
+        this.loadPetitions();
+    },
+
+    view: function() {
+        var ordreTriDropdown = m("select", { onchange: this.majTri.bind(this) }, [
+            m("option", { value: "ASC" }, "Croissant"),
+            m("option", { value: "DESC" }, "Décroissant")
+        ]);
+
+        var triParDropdown = m("select", { onchange: this.majTriPar.bind(this) }, [
+            m("option", { value: "AUTHOR" }, "Auteur"),
+            m("option", { value: "NAME" }, "Nom"),
+            m("option", { value: "DATE" }, "Date"),
+            m("option", { value: "SIGNATURE" }, "Signatures")
+        ]);
+
+        return m('div', { class: 'container box-shadow' }, [
+            m(MainNav),
+            m('div', { class: 'mx-auto' }, [
+                m(cardList)
+            ]),
+            m('div', { class: 'text-center' }, [
+            m("div", { class: 'mb-2', style: 'display: inline-block; margin: 1%;' }, [
+                m("label", "Ordre de tri: "),
+                ordreTriDropdown
+            ]),
+            m("div", { class: 'mb-2', style: 'display: inline-block;  margin: 1%;' }, [
+                m("label", "Trier par: "),
+                triParDropdown
+            ])
+            ]),
+
+            m("footer", { class: 'mb-3 fixed-bottom text-dark-50 text-center flex' }, "LE BERRE COSQUER M1 MIAGE 2023")
+        ]);
+    }
+};
+
+
+
+        var MyExploreView = {
+            oninit: function() {
+                
+                Petitions.loadMyList("NAME","ASC",Login.email.toString(),cardList.page + 1).then(function() {
+                    return Promise.all(Petitions.myList.map(function(item) {
+                        try {
+                            return Petitions.getAuthor(item.properties.P_Author.id).then(function(author) {
+                                item.author = author;
+                            });
+                        } catch(error) {
+                            console.log("ERROR");
+                        }
+                    }));
+                }).then(function() {
+                    m.redraw();
+                });
+            },
+            view: function() {
+                var myCards = [];
+                Petitions.myList.forEach(function(item, index) {
+                    var author = Petitions.myList[index].author;
+                    console.log(author);
+                    if (author !== undefined) {
+                        myCards.push(createCard(item.properties.P_Name, author.properties.A_Name, item.properties.P_Date, item.properties.P_Signatures, function() {
+                        m.route.set("/Signature/:id" + item.key.id);
+                    }));
+                    } else {
+                        myCards.push(createCard(item.properties.P_Name, "Jean Bugé", item.properties.P_Date, item.properties.P_Signatures, function() {
+                        m.route.set("/Signature/:id" + item.key.id);
+                    }));
+                    }
+                });
+                
+                return m('div', {
+                    class: 'text-center cover-container d-flex w-100 h-100 p-3 mx-auto flex-column'
+                }, [
+                    m(MainNav),
+                    m('div', {
+                        class: 'mx-auto'
+                    }, [
+                        m('.row.row-cols-1.row-cols-sm-2.row-cols-md-3', myCards)
+                    ]),
+                    m("footer", {
+                        class: 'mb-3 fixed-bottom text-dark-50'
+                    }, "@Copyright LE BERRE COSQUER M1 MIAGE 202")
+
+                ]);
+            }
+        };
+
+        var MySignaturesView = {
+    ordreTri: "DESC",
+    triPar: "NAME",
+
+    oninit: function() {
+        this.loadMySignatures();
+    },
+
+    loadMySignatures: function() {
+        Petitions.MySignatures(this.triPar, this.ordreTri, Login.email.toString(), cardList.page + 1)
+            .then(function() {
+                return Promise.all(Petitions.MySig.map(function(item) {
+                    try {
+                        return Petitions.getAuthor(item.properties.P_Author.id).then(function(author) {
+                            item.author = author;
+                        });
+                    } catch (error) {
+                        console.log("ERROR");
+                    }
+                }));
+            })
+            .then(function() {
+                m.redraw();
+            });
+    },
+
+    majTri: function(event) {
+        this.ordreTri = event.target.value;
+        this.loadMySignatures();
+    },
+
+    majTriPar: function(event) {
+        this.triPar = event.target.value;
+        this.loadMySignatures();
+    },
+
+    view: function() {
+        var myCards = Petitions.MySig.map(function(item) {
+            var author = item.author;
+            var authorName = author !== undefined ? author.properties.A_Name : "Jean Bugé";
+
+            return createCard(item.properties.P_Name, authorName, item.properties.P_Date, item.properties.P_Signatures, function() {
+                m.route.set("/Signature/:id" + item.key.id);
+            });
+        });
+
+        var ordreTriDropdown = m("select", { onchange: this.majTri.bind(this) }, [
+            m("option", { value: "ASC" }, "Croissant"),
+            m("option", { value: "DESC" }, "Décroissant")
+        ]);
+
+        var triParDropdown = m("select", { onchange: this.majTriPar.bind(this) }, [
+            m("option", { value: "AUTHOR" }, "Auteur"),
+            m("option", { value: "NAME" }, "Nom"),
+            m("option", { value: "DATE" }, "Date"),
+            m("option", { value: "SIGNATURE" }, "Signatures")
+        ]);
+
+        return m('div', { class: 'container box-shadow' }, [
+    m(MainNav),
+    m('div', { class: 'mx-auto' }, [
+        m('.row.row-cols-1.row-cols-sm-2.row-cols-md-3 justify-content-center', myCards)
+    ]),
+    m('div', { class: 'text-center' }, [
+        m("div", { class: 'mb-2', style: 'display: inline-block; margin: 1%;' }, [
+            m("label", "Ordre de tri: "),
+            ordreTriDropdown
+        ]),
+        m("div", { class: 'mb-2', style: 'display: inline-block;  margin: 1%;' }, [
+            m("label", "Trier par: "),
+            triParDropdown
+        ])
+    ]),
+    m("footer", { class: 'mb-3 fixed-bottom text-dark-50' }, "LE BERRE COSQUER M1 MIAGE 2023")
+]);
+    }
+};
+
+
+        var CreateView = {
+            view: function() {
+                return m('div', {
+                    class: 'text-center cover-container d-flex w-100 h-100 p-3 mx-auto flex-column'
+                }, [
+                    m(MainNav),
+                    m('.container.position-absolute top-50 start-50 translate-middle', [
+                        m('h1.h1-custom1', 'Créer une pétition'),
+                        m('div', [
+                            m('form', {
+                                onsubmit: function(e) {
+                                    //var currentTime = new Date();
+                                    //var currentTimeDisp = currentTime.toLocaleString() + " - ";
+                                    e.preventDefault();
+                                    Petitions.addPet(fname, fdescription, Login.email, Login.name);
+                                    m.route.set("/Explore/:page0")
+                                }
+                            }, [
+                                m('.mb-3', [
+                                    m('label.form-label', "Petition's name *"),
+                                    m('input.form-control', {
+                                        type: 'text',
+                                        required: true,
+                                        oninput: function(e) {
+                                            fname = e.target.value;
+                                            console.log("Name:", fname);
+                                        }
+                                    })
+                                ]),
+                                m('.mb-3', [
+                                    m('label.form-label', 'Description *'),
+                                    m('textarea.form-control', {
+                                        rows: 5,
+                                        required: true,
+                                        oninput: function(e) {
+                                            fdescription = e.target.value;
+                                            console.log("Desc:", fdescription);
+                                        }
+                                    })
+                                ]),
+                                /* AJOUTER UN IMAGE
+                                m('.mb-3', [
+                                    m('label.form-label', 'Image'),
+                                    m('input.form-control', {
+                                        type: 'file',
+                                        accept: 'image/*',
+                                        onchange: function(e) {                                            
+                                            fimage = null;
+                                            fimage = e.target.files[0];
+                                        }
+                                    })
+                                ]),*/
+                                m('button.btn.btn-success.mt-5.w-100', {
+                                    type: 'submit'
+                                }, 'Créer')
+                            ])
+                        ])
+                    ])
+                ])
+            }
+        };
+/*
+        var PetitionV = {
+             oninit: function(vnode) {
+                // Récupérer l'identifiant de la pétition dans l'URL
+                var hash = window.location.hash;
+                var id = hash.match(/id(\d+)/)[1];
+                console.log(id);
+
+                // Charger les informations de la pétition à partir du serveur
+                Petitions.getPetition(id).then(function(petition) {                            
+                    // Mettre à jour la vue avec les informations de la pétition
+                    vnode.state.petition = petition;
+                    m.redraw();
+                });
+            },
+            view: function(vnode) {
+                var petition = vnode.state.petition;
+                if (!petition) {
+                    return m("h1", "Chargement en cours...");
+                }
+                return m('div', {
+                    class: 'text-center text-bg-dark cover-container d-flex w-100 h-100 p-3 mx-auto flex-column'
+                }, [
+                    m(MainNav),
+                    m(".container-fluid.h-100.mb-4", [
+                        m(".row.h-100", [
+                            // Informations sur la pétition
+                            m(".col-lg-6.col-md-6.col-sm-12", [
+                                m(".card.card-hover.card-bg-custom1.mt-4.h-100", {
+                                    style: {
+                                        background: "transparent",
+                                        display: "flex"
+                                    }
+                                }, [
+                                    m(".card-body.text-center", {
+                                        style: {
+                                            flex: "1",
+                                            background: "#D9114A"
+                                        }
+                                    }, [
+                                        m("h5.card-title.text-white.h1-custom1", "petition.properties.name"),
+                                        m("p.card-text.text-whiIMPULSEte", "petition.properties.score")
+                                    ])
+                                ])
+                            ]),
+                            // Formulaire de signature
+                            m(".col-lg-6.col-md-6.col-sm-12", [
+                                m("form.mt-5", {
+                                    onsubmit: function(event) {
+                                        event.preventDefault();
+                                        SignatureForm.submitForm();
+                                    }
+                                }, [m(".form-group.p-4", [m("label[for='lastName']", "LastName"), m("input.form-control[type='text'][id='lastName']", {
+                                        oninput: function(event) {
+                                            SignatureForm.name = event.target.value;
+                                        }
+                                    })]),
+                                    m(".form-group.p-4", [
+                                        m("label[for='firstName']", "First Name"),
+                                        m("input.form-control[type='text'][id='firstName']", {
+                                            oninput: function(event) {
+                                                SignatureForm.firstName = event.target.value;
+                                            }
+                                        })
+                                    ]),
+                                    m(".form-group.p-4", [
+                                        m("label[for='birthDate']", "Date de naissance"),
+                                        m("input.form-control[type='date'][id='birthDate']", {
+                                            oninput: function(event) {
+                                                SignatureForm.birthDate = event.target.value;
+                                            }
+                                        })
+                                    ]),
+                                    m(".form-group.p-4", [
+                                        m("label[for='city']", "Ville"),
+                                        m("input.form-control[type='text'][id='city']", {
+                                            oninput: function(event) {
+                                                SignatureForm.city = event.target.value;
+                                            }
+                                        })
+                                    ]),
+                                    m(".form-group.p-4", [
+                                        m("label[for='country']", "Pays"),
+                                        m("input.form-control[type='text'][id='country']", {
+                                            oninput: function(event) {
+                                                SignatureForm.country = event.target.value;
+                                            }
+                                        })
+                                    ]),
+                                    m("button.mt-4.btn.btn-success[type='submit']", "Signer la pétition")
+                                ])
+                            ]),
+                        ])
+                    ])
+                ])
+            }
+        };
+*/
+
+////////////////////////UPTDATE
+
+        var PetitionV = {
+            oninit: function(vnode) {
+                // Récupérer l'identifiant de la pétition dans l'URL
+                var hash = window.location.hash;
+                var id = hash.match(/id(\d+)/)[1];
+                console.log(id);
+
+                // Charger les informations de la pétition à partir du serveur
+                Petitions.getPetition(id).then(function(petition) {                            
+                    // Mettre à jour la vue avec les informations de la pétition
+                    vnode.state.petition = petition;
+                    m.redraw();
+                });
+            },
+            view: function(vnode) {
+                var petition = vnode.state.petition;
+
+                if (!petition) {
+                    return m("h1", "ERREUR 404 NOT FOUND");
+                }
+
+                return m('div', {
+                    class: 'text-center text-bg-dark cover-container d-flex w-100 h-100 p-3 mx-auto flex-column'
+                }, [
+                    m(MainNav),
+                    m(".container-fluid.h-100.mb-4", [
+                        m(".row.h-100", [
+                            // Informations sur la pétition
+                            m(".col-lg-.col-md-6.col-sm-12.w-75", [
+                                m(".card.card-hover.card-bg-custom1.mt-4.h-100", {
+                                    style: {
+                                        background: "transparent",
+                                        display: "flex"
+                                    }
+                                }, [
+                                    m(".card-body.text-center", {
+                                        style: {
+                                            flex: "1",
+                                            background: "#D9114A"
+                                        }
+                                    }, [
+                                        m("h5.card-title.text-white.h1-custom1", petition.properties.P_Name),
+                                        m("p.card-text.text-white", petition.properties.P_Description)
+                                    ])
+                                ])
+                            ]),
+                            // Bouton pour signer la pétition
+                            m(".col-lg-6.col-md-6.col-sm-12.d-flex.justify-content-end.w-25.h-100.mx-auto", [
+                                m("button.h-100.w-100.mt-4.btn.rounded-0.btn-success[type='button']", {
+                                    onclick: function() {
+                                        // Ouvrir la pop-up de confirmation
+                                        if (confirm("Voulez-vous signer cette pétition ?")) {
+                                            // Appeler la méthode API REST pour signer la pétition
+                                            Petitions.signPetition(petition.key.id, Login.email);
+                                            m.route.set("/Explore/:page0")
+                                        }
+                                    }
+                                }, "Signer la pétition")
+                            ]),
+                        ])
+                    ])
+                ])
+            }
+        };
+
+
+        //#####ROUTE######
+        m.route(document.body, "/Welcome", {
+            "/Login": LoginView,
+            "/Welcome": WelcomeView,
+            "/Explore/:page0": ExploreView,
+            "/Explore/:page": ExploreView,
+            "/Create": CreateView,
+            "/Signature/:id": PetitionV,
+            "/MyExplore": MyExploreView,
+            "/Signed" : MySignaturesView,
+        });
+    </script>
+</body>
+
+</html>

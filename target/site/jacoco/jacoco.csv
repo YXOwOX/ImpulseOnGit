@@ -1,0 +1,30 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+Impulse,foo,Consistency.new Runnable() {...},59,0,2,0,13,0,3,0,2,0
+Impulse,foo,Consistency.new Runnable() {...},62,0,2,0,11,0,3,0,2,0
+Impulse,foo,Consistency.new Runnable() {...},73,0,2,0,15,0,3,0,2,0
+Impulse,foo,PrefixServlet,189,0,8,0,33,0,8,0,4,0
+Impulse,foo,FriendQuery,372,0,8,0,55,0,6,0,2,0
+Impulse,foo,FriendServlet,110,0,4,0,17,0,4,0,2,0
+Impulse,foo,ImpulseEndpoint.new Comparator() {...},106,0,9,0,26,0,8,0,2,0
+Impulse,foo,PrefixClean,58,0,2,0,11,0,3,0,2,0
+Impulse,foo,Counting.new Runnable() {...},72,0,2,0,12,0,3,0,2,0
+Impulse,foo,FriendBlockServlet,144,0,6,0,21,0,5,0,2,0
+Impulse,foo,HelloAppEngine,0,109,0,2,0,15,0,4,0,3
+Impulse,foo,CountingTR.new Runnable() {...},102,0,4,0,21,0,4,0,2,0
+Impulse,foo,OneTupleTR,162,0,4,0,27,0,5,0,3,0
+Impulse,foo,CountingTR,118,0,4,0,23,0,5,0,3,0
+Impulse,foo,PostMessage,3,0,0,0,1,0,1,0,1,0
+Impulse,foo,PetitionQuery,145,0,4,0,24,0,4,0,2,0
+Impulse,foo,RandomResult,9,0,0,0,3,0,1,0,1,0
+Impulse,foo,CountingSh.new Runnable() {...},103,0,4,0,19,0,4,0,2,0
+Impulse,foo,MsgIndex,228,0,4,0,35,0,4,0,2,0
+Impulse,foo,PrefixQuery,302,0,8,0,48,0,6,0,2,0
+Impulse,foo,CountingSh,143,0,8,0,25,0,6,0,2,0
+Impulse,foo,ScoreEndpoint,397,0,10,0,86,0,18,0,13,0
+Impulse,foo,Consistency,144,0,6,0,36,0,6,0,3,0
+Impulse,foo,UsersServlet,50,0,2,0,17,0,3,0,2,0
+Impulse,foo,ImpulseEndpoint,739,0,40,0,176,0,33,0,9,0
+Impulse,foo,OneTupleTR.new Runnable() {...},130,0,2,0,25,0,3,0,2,0
+Impulse,foo,TestTransaction,75,0,4,0,14,0,4,0,2,0
+Impulse,foo,PetitionServlet,163,0,6,0,29,0,5,0,2,0
+Impulse,foo,Counting,115,0,4,0,22,0,4,0,2,0
