@@ -1,0 +1,548 @@
+package foo;
+
+import java.io.Console;
+import java.io.IOException;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import javax.transaction.TransactionRolledbackException;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.ArrayList;
+
+import com.google.api.server.spi.auth.common.User;
+import com.google.api.server.spi.config.Api;
+import com.google.api.server.spi.config.ApiMethod;
+import com.google.api.server.spi.config.ApiMethod.HttpMethod;
+import com.google.api.server.spi.discovery.DiscoveryGenerator.Result;
+import com.google.api.server.spi.config.ApiNamespace;
+import com.google.api.server.spi.config.Named;
+import com.google.api.server.spi.config.Nullable;
+import com.google.api.server.spi.response.BadRequestException;
+import com.google.api.server.spi.response.CollectionResponse;
+import com.google.api.server.spi.response.InternalServerErrorException;
+import com.google.api.server.spi.response.NotFoundException;
+import com.google.api.server.spi.response.ServiceUnavailableException;
+import com.google.api.server.spi.response.UnauthorizedException;
+import com.google.api.client.util.Data;
+import com.google.api.server.spi.auth.EspAuthenticator;
+
+import com.google.appengine.api.datastore.Cursor;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.PropertyProjection;
+import com.google.appengine.api.datastore.PreparedQuery.TooManyResultsException;
+import com.google.appengine.api.datastore.Query.CompositeFilter;
+import com.google.appengine.api.datastore.Query.CompositeFilterOperator;
+import com.google.appengine.api.datastore.Query.Filter;
+import com.google.appengine.api.datastore.Query.FilterOperator;
+import com.google.appengine.api.datastore.Query.FilterPredicate;
+import com.google.appengine.api.datastore.Query.SortDirection;
+import com.google.appengine.api.prospectivesearch.ErrorPb.Error;
+import com.google.appengine.repackaged.com.google.datastore.v1.client.DatastoreException;
+
+import endpoints.repackaged.com.google.api.Endpoint;
+import endpoints.repackaged.org.apache.http.util.EntityUtils;
+
+import com.google.appengine.api.datastore.QueryResultList;
+import com.google.appengine.api.datastore.Transaction;
+import com.google.appengine.api.datastore.*;
+
+
+@Api(name = "impulseAPI",
+     version = "v2",
+     audiences = "943253209248-viavhim27kiij8eb6fepitrbmmu67rof.apps.googleusercontent.com",
+  	 clientIds = {"943253209248-viavhim27kiij8eb6fepitrbmmu67rof.apps.googleusercontent.com",
+        "943253209248-viavhim27kiij8eb6fepitrbmmu67rof.apps.googleusercontent.com"},
+     namespace =
+     @ApiNamespace(
+		   ownerDomain = "Impulse.local",
+		   ownerName = "Impulse.local",
+		   packagePath = "")
+)
+
+
+public class ImpulseEndpointProperBUGGED {
+
+    /*######################################### VERSION FILTRE PERSONNALISABLES #########################################*/
+    //RECUPERATION DE TOUTES LES PETITIONS
+    @ApiMethod(name = "ListAllPetitions", path = "ListAllPetitions/{filter}/{sort}/{page}", httpMethod = HttpMethod.GET)
+    public List<Entity> ListAllPetitions(@Named("filter") String filterCfg, @Named("sort") String sortCfg, @Named("page") int page) throws IOException, BadRequestException, NotFoundException, InternalServerErrorException, ServiceUnavailableException {
+        try {
+            // Récupérer le service Datastore
+            DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    
+            // Convertir le paramètre "filterCfg" en nom de filtre approprié
+            String filter = "";
+            switch (filterCfg) {
+                case "AUTHOR":
+                    filter = "P_Author";
+                    break;
+                case "NAME":
+                    filter = "P_Name";
+                    break;
+                case "DATE":
+                    filter = "P_Date";
+                    break;
+                case "SIGNATURES":
+                    filter = "P_Signatures";
+                    break;
+                default:
+                    filter = "P_Date";
+                    break;
+            }
+    
+            // Convertir le paramètre "sortCfg" en direction de tri appropriée
+            SortDirection sort = null;
+            switch (sortCfg) {
+                case "ASC":
+                    sort = SortDirection.ASCENDING;
+                    break;
+                case "DESC":
+                    sort = SortDirection.DESCENDING;
+                    break;
+                default:
+                    sort = SortDirection.DESCENDING;
+                    break;
+            }
+    
+            // Construire la requête de recherche des pétitions avec le filtre et le tri
+            Query petitionQuery = new Query("Petition").addSort(filter, sort);
+            PreparedQuery preparedQuery = datastore.prepare(petitionQuery);
+    
+            // Calculer l'index de départ en fonction de la page demandée
+            int startIndex = (page - 1) * 25;
+    
+            // Exécuter la requête avec l'index de départ et la limite de résultats
+            List<Entity> petitionList = preparedQuery.asList(FetchOptions.Builder.withOffset(startIndex).limit(25));
+            return petitionList;
+    
+        } catch (IllegalArgumentException e) {
+            // Gérer les erreurs de mauvais paramètre
+            throw new BadRequestException("400 ERROR - WRONG PARAMETER");
+        } catch (DatastoreFailureException e) {
+            // Gérer les erreurs de service Datastore indisponible
+            throw new ServiceUnavailableException("500_DTS ERROR - DATASTORE UNAVAILABLE");
+        } catch (Exception e) {
+            // Gérer les autres erreurs internes
+            throw new InternalServerErrorException("500 ERROR - UNKNOW INTERNAL ERROR");
+        }
+    }
+
+    //RECUPERATION DES PETITIONS SIGNEES PAR UNE PERSONNE
+    @ApiMethod(name = "ListSignedPetitions", path = "ListSignedPetitions/{filter}/{sort}/{personEmail}/{page}", httpMethod = HttpMethod.GET)
+    public List<Entity> ListSignedPetitions(@Named("filter") String filterCfg, @Named("sort") String sortCfg, @Named("personEmail") String personEmail, @Named("page") int page) throws IOException, BadRequestException, NotFoundException, InternalServerErrorException, ServiceUnavailableException {
+        try {
+            // Récupérer le service Datastore
+            DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    
+            // Rechercher l'entité Person correspondant à l'e-mail spécifié
+            Query personQuery = new Query("Person").setFilter(new FilterPredicate("PRSN_Email", FilterOperator.EQUAL, personEmail));
+            Entity person = datastore.prepare(personQuery).asSingleEntity();
+    
+            // Vérifier si l'entité Person existe
+            if (person == null) {
+                throw new NotFoundException("Person not found");
+            }
+    
+            List<Entity> returnArr = new ArrayList<Entity>();
+    
+            // Récupérer les clés des pétitions signées par la personne
+            List<Key> signedPetitionsKeys = (ArrayList<Key>) person.getProperty("PRSN_Signed");
+    
+            // Calculer l'index de début et de fin en fonction de la page demandée
+            int startIndex = (page - 1) * 25;
+            int endIndex = Math.min((page + 1) * 25, signedPetitionsKeys.size());
+    
+            // Parcourir les clés des pétitions signées et récupérer les entités correspondantes
+            for (int i = startIndex; i < endIndex; i++) {
+                Key signedKey = signedPetitionsKeys.get(i);
+                Query petitionQuery = new Query("Petition").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, signedKey));
+                returnArr.add(datastore.prepare(petitionQuery).asSingleEntity());
+            }
+    
+            // Trier la liste des entités de pétitions en fonction du filtre spécifié
+            Collections.sort(returnArr, new Comparator<Entity>() {
+                public int compare(Entity entity1, Entity entity2) {
+                    String filter = "";
+                    int result = -1000;
+                    switch (filterCfg) {
+                        case "AUTHOR":
+                            filter = "P_Author";
+                            String authA = (String) entity1.getProperty(filter);
+                            String authB = (String) entity2.getProperty(filter);
+                            result = authA.compareTo(authB);
+                            break;
+    
+                        case "NAME":
+                            filter = "P_Name";
+                            String nameA = (String) entity1.getProperty(filter);
+                            String nameB = (String) entity2.getProperty(filter);
+                            result = nameA.compareTo(nameB);
+                            break;
+    
+                        case "DATE":
+                            filter = "P_Date";
+                            Date dateA = (Date) entity1.getProperty(filter);
+                            Date dateB = (Date) entity2.getProperty(filter);
+                            result = dateA.compareTo(dateB);
+                            break;
+    
+                        case "SIGNATURES":
+                            filter = "P_Signatures";
+                            int signA = (int) entity1.getProperty(filter);
+                            int signB = (int) entity2.getProperty(filter);
+                            if (signA == signB) {
+                                result = 0;
+                            } else if (signA <= signB) {
+                                result = -1;
+                            } else {
+                                result = 1;
+                            }
+                            break;
+    
+                        default:
+                            filter = "P_Date";
+                            break;
+                    }
+                    return result;
+                }
+            });
+    
+            // Inversion du tri si nécessaire (DESCENDING)
+            if (sortCfg.equals("DESC")) {
+                Collections.reverse(returnArr);
+            }
+    
+            return returnArr;
+    
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("400 ERROR - WRONG PARAMETER");
+        } catch (DatastoreFailureException e) {
+            throw new ServiceUnavailableException("500_DTS ERROR - DATASTORE UNAVAILABLE");
+        } catch (Exception e) {
+            throw new InternalServerErrorException("500 ERROR - UNKNOWN INTERNAL ERROR");
+        }
+    }
+
+    //RECUPERATION D'UNE PETITION PAR NOM D'AUTEUR
+    @ApiMethod(name = "ListPetitionsByAuthorName", path="ListPetitionsByAuthorName/{filter}/{Sort}/{authorEmail}/{page}", httpMethod = HttpMethod.GET)
+    public List<Entity> ListPetitionsByAuthorName(@Named("filter") String filterCfg, @Named("sort") String sortCfg, @Named("authorEmail") String authorEmail, @Named("page") int page) throws IOException, BadRequestException, NotFoundException, InternalServerErrorException, ServiceUnavailableException {
+        try{
+            DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        
+            String filter = "";
+            switch(filterCfg) {
+                case "AUTHOR" : 
+                    filter = "P_Author";
+                    break;
+                case "NAME" :
+                    filter = "P_Name";
+                    break;
+                case "DATE" :
+                    filter = "P_Date";
+                    break;
+                case "SIGNATURES" :
+                    filter = "P_Signatures";
+                    break;
+                default :
+                    filter = "P_Date";
+                    break;
+            }
+
+            SortDirection sort = null;
+            switch (sortCfg) {
+                case "ASC" :
+                    sort = SortDirection.ASCENDING;
+                    break;
+
+                case "DESC" :
+                    sort = SortDirection.DESCENDING;
+                    break;
+
+                default :
+                    sort = SortDirection.DESCENDING;
+                    break;
+            }
+
+            
+            Query authorQuery = new Query("Person").setFilter(new FilterPredicate("PRSN_Email", FilterOperator.EQUAL, authorEmail));
+            Entity author = datastore.prepare(authorQuery).asSingleEntity();
+            
+            if (author == null) {
+                throw new IllegalArgumentException("Author not found with name: " + authorEmail);
+            }
+            
+            
+            Query petitionQuery = new Query("Petition").setFilter(new FilterPredicate("P_Author", FilterOperator.EQUAL, author.getKey()));
+            petitionQuery.addSort(filter, sort);
+            PreparedQuery preparedQuery = datastore.prepare(petitionQuery);
+
+            int startIndex = (page - 1)  * 25;
+
+            List<Entity> result = preparedQuery.asList(FetchOptions.Builder.withOffset(startIndex).limit(25));
+            
+            return result;
+
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("400 ERROR - WRONG PARAMETER");
+        } catch (DatastoreFailureException e) {
+            throw new ServiceUnavailableException("500_DTS ERROR - DATASTORE UNAVAILABLE");
+        } catch (Exception e) {
+            throw new InternalServerErrorException("500 ERROR - UNKNOW INTERNAL ERROR");
+        } 
+    }
+    
+    /*################################################### END  ####################################################*/
+
+
+
+    
+
+    //RECUPERATION DE TOUTES LES PERSONNES
+    @ApiMethod(name = "ListAllPerson", httpMethod = HttpMethod.GET)
+    public List<Entity> ListAllPerson() throws IOException, InternalServerErrorException, ServiceUnavailableException {
+        try {
+            Query personQuery = new Query("Person").addSort("PRSN_Name", SortDirection.DESCENDING);
+
+            DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+            PreparedQuery preparedQuery = datastore.prepare(personQuery);
+            List<Entity> personList = preparedQuery.asList(FetchOptions.Builder.withLimit(100));
+            return personList;
+        } catch (DatastoreFailureException e) {
+            throw new ServiceUnavailableException("500_DTS ERROR - DATASTORE UNAVAILABLE");
+        } catch (Exception e) {
+            throw new InternalServerErrorException("500 ERROR - UNKNOW INTERNAL ERROR");
+        }
+    }
+    
+        
+    //RECUPERATION D'UNE PERSONNE
+    @ApiMethod(name = "GetPerson", path="GetPerson/{personId}", httpMethod = HttpMethod.GET)
+    public Entity GetPerson(@Named("personId") String personId) throws IOException, BadRequestException, NotFoundException, InternalServerErrorException, ServiceUnavailableException {
+        try{
+            DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+            Key EGPetitions = KeyFactory.createKey("EGPetitions", "EGPetitions");
+                
+            Key personKey = KeyFactory.createKey(EGPetitions,"Person", Long.parseLong(personId));
+            Query.Filter keyFilter = new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, personKey);
+            Query personQuery = new Query("Person").setFilter(keyFilter);
+                
+            Entity person = datastore.prepare(personQuery).asSingleEntity();
+                
+            if (person == null) {
+                return null;
+            }
+            return person;
+
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("400 ERROR - WRONG PARAMETER");
+        } catch (DatastoreFailureException e) {
+            throw new ServiceUnavailableException("500_DTS ERROR - DATASTORE UNAVAILABLE");
+        } catch (Exception e) {
+            throw new InternalServerErrorException("500 ERROR - UNKNOW INTERNAL ERROR");
+        }    
+    }
+    
+    //RECUPERATION D'UNE PETITION
+    @ApiMethod(name = "GetPetition", path="GetPetition/{petitionId}", httpMethod = HttpMethod.GET)
+    public Entity GetPetition(@Named("petitionId") String petitionId) throws IOException, BadRequestException, NotFoundException, InternalServerErrorException, ServiceUnavailableException {
+        try{
+            DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+            Key EGPetitions = KeyFactory.createKey("EGPetitions", "EGPetitions");
+        
+            Key petitionKey = KeyFactory.createKey(EGPetitions,"Petition", Long.parseLong(petitionId));
+            Query.Filter keyFilter = new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, petitionKey);
+            Query petitionQuery = new Query("Petition").setFilter(keyFilter);
+        
+            Entity petition = datastore.prepare(petitionQuery).asSingleEntity();
+        
+            if (petition == null) {
+                return null;
+            }
+        
+            return petition;
+
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("400 ERROR - WRONG PARAMETER");
+        } catch (DatastoreFailureException e) {
+            throw new ServiceUnavailableException("500_DTS ERROR - DATASTORE UNAVAILABLE");
+        } catch (Exception e) {
+            throw new InternalServerErrorException("500 ERROR - UNKNOW INTERNAL ERROR");
+        }  
+
+    }
+
+    //CREATION DE PETITIONS
+    @ApiMethod(name = "AddPetition", path = "AddPetition/{name}/{description}/{email}/{author}", httpMethod = HttpMethod.PUT)
+    public Entity AddPetition(@Named("name") String petitionName, @Named("description") String petitionDecription, @Named("email") String petitionEmail, @Named("author") String petitionAuthor) throws IOException, BadRequestException, NotFoundException, InternalServerErrorException, ServiceUnavailableException {
+        try{
+            System.setProperty(DatastoreServiceConfig.DATASTORE_EMPTY_LIST_SUPPORT, Boolean.TRUE.toString());
+
+            ArrayList<Key> personSignerArr = new ArrayList<Key>();
+            DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+            Key EGPetitions = KeyFactory.createKey("EGPetitions", "EGPetitions");
+            
+            Query.Filter nameFilter = new Query.FilterPredicate("PRSN_Name", Query.FilterOperator.EQUAL, petitionAuthor);
+            Query.Filter emailFilter = new Query.FilterPredicate("PRSN_Email", Query.FilterOperator.EQUAL, petitionEmail);
+            Query.Filter compositeFilter = Query.CompositeFilterOperator.and(nameFilter, emailFilter);
+            Query personQuery = new Query("Peron").setFilter(compositeFilter);
+
+
+            Entity person = datastore.prepare(personQuery).asSingleEntity();
+            if (person == null) {
+                try{
+                    Entity newPerson = new Entity("Person", EGPetitions);
+                    newPerson.setProperty("PRSN_Name", petitionAuthor);
+                    newPerson.setProperty("PRSN_Email", petitionEmail);
+                    newPerson.setProperty("PRSN_Signed", personSignerArr);
+                    datastore.put(newPerson);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    throw new IOException("500 - UNKNOW INTERNAL ERROR");
+                }
+            }
+
+            Entity petition = new Entity("Petition", EGPetitions);
+            try{
+                petition.setProperty("P_Name", petitionName);
+                petition.setProperty("P_Author", person.getKey());
+                petition.setProperty("P_Description", petitionDecription);
+                petition.setProperty("P_Signatures", 0);
+                petition.setProperty("P_Date", new Date());
+                datastore.put(petition);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                throw new IOException("500p - UNKNOW INTERNAL ERROR");
+            }
+
+            return petition;
+            
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("400 ERROR - WRONG PARAMETER");
+        } catch (DatastoreFailureException e) {
+            throw new ServiceUnavailableException("500_DTS ERROR - DATASTORE UNAVAILABLE");
+        } catch (Exception e) {
+            throw new InternalServerErrorException("500 ERROR - UNKNOW INTERNAL ERROR");
+        } 
+    }
+
+
+    //SIGNATURE DES PETITIONS
+    @ApiMethod(name = "SignPetition", path="SignPetition/{petitionId}/{signerMail}", httpMethod = HttpMethod.PUT)
+    public Entity SignPetition(@Named("petitionId") String petitionId, @Named("signerMail") String signerMail) throws IOException, BadRequestException, NotFoundException, InternalServerErrorException, ServiceUnavailableException {
+        try{
+            DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+            Key EGPetitions = KeyFactory.createKey("EGPetitions", "EGPetitions");
+            Random random=new Random();
+            
+            List<Entity> listCounters = new ArrayList<>(); 
+            for (int i=0;i<20;i++) {
+                Entity createCounter = new Entity("Count", i + "_Cntr",EGPetitions);
+                listCounters.add(createCounter);
+                createCounter.setProperty("val", 0);
+                datastore.put(listCounters);
+            }
+            
+            Query.Filter emailFilter = new FilterPredicate("PRSN_Email", FilterOperator.EQUAL, signerMail);
+            Query signerQuery = new Query("Person").setFilter(emailFilter);
+            Entity signer = datastore.prepare(signerQuery).asSingleEntity();
+    
+            if (signer != null) {
+                Key petitionKey = KeyFactory.createKey(EGPetitions, "Petition", Long.parseLong(petitionId));
+    
+                ArrayList<Key> petitionsArrayCheck = (ArrayList<Key>) signer.getProperty("PRSN_Signed");
+    
+                if(!(petitionsArrayCheck.contains(petitionKey))) {
+    
+                    Query.Filter keyFilter = new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, petitionKey);
+                    Query petitionQuery = new Query("Petition").setFilter(keyFilter);
+                    Entity petition = datastore.prepare(petitionQuery).asSingleEntity();
+    
+                    Transaction txn0=datastore.beginTransaction();
+                    try{
+                        //MAJ DES COUNTER INDEPENDANTS
+                        int randomCounter = random.nextInt(listCounters.size());
+                        Entity counter = datastore.get(listCounters.get(randomCounter).getKey());
+                        Long counterVal=(Long)counter.getProperty("val");
+                        counter.setProperty("val", counterVal + 1);
+                        datastore.put(counter);
+                        txn0.commit(); 
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                        txn0.rollback();
+                    }
+                    finally
+                    {
+                        if (txn0.isActive()) {
+                            txn0.rollback();
+                        }
+                    }
+    
+                    Transaction txn=datastore.beginTransaction();
+                    try{
+                        //AJOUT DE L'ID DE LA PETITION DANS LES INFORMATIONS DU SIGNATAIRE
+                        petitionsArrayCheck.add(petition.getKey());
+                        signer.setProperty("PRSN_Signed", petitionsArrayCheck);
+                        datastore.put(txn,signer);
+    
+                        //INCREMENTATION DU COUNTER GLOBAL SUR LA PETITIONS SIGNE
+                        Long mergeCounters=(long) 0;
+                        for (Entity counterIterator : listCounters) {
+                            mergeCounters+=(long)datastore.get(counterIterator.getKey()).getProperty("val");
+                        }
+        
+                        Long petitionSignatureCount = (Long) petition.getProperty("P_Signatures");
+                        petition.setProperty("P_Signatures", petitionSignatureCount + mergeCounters);
+                        datastore.put(txn,petition);
+    
+    
+                        txn.commit(); 
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                        txn.rollback();
+                    }
+                    finally
+                    {
+                        if (txn.isActive()) {
+                            txn.rollback();
+                        }
+                    }
+        
+                    return signer;
+                }
+                else {
+                    throw new IOException("401 - PETITION ALREADY SIGNED");
+                }
+                
+            }
+            else {
+                throw new IOException("401 - UNAUTHENTIFIED USERS CAN'T SIGN");
+            }
+
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("400 ERROR - WRONG PARAMETER");
+        } catch (DatastoreFailureException e) {
+            throw new ServiceUnavailableException("500_DTS ERROR - DATASTORE UNAVAILABLE");
+        } catch (Exception e) {
+            throw new InternalServerErrorException("500 ERROR - UNKNOW INTERNAL ERROR");
+        } 
+    }
+}
